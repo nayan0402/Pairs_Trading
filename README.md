@@ -1,4 +1,4 @@
-# Quant Research Project – Pairs Trading Strategy on Indian Indices
+# Quant Research Project – Pairs Trading Strategy on Nifty and Bank Nifty
 
 **Author:** Arsh Singh
 
