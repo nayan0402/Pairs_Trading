@@ -22,13 +22,14 @@ $$
 \\text{P/L} = \\text{Spread} \\times (\\text{Time To Expiry})^{0.7}
 $$
    
-3. **Enhanced Model:** An improved model that modifies the spread definition by incorporating the effect of time-to-expiry (TTE) directly into the spread. In this model, the “weighted spread” is defined as
+2. **Enhanced Model:** An improved model that modifies the spread definition by incorporating the effect of time-to-expiry (TTE) directly into the spread. In this model, the “weighted spread” is defined as
    
 $$
 W = (\\text{Bank Nifty IV} - \\text{Nifty IV}) \\times (\\text{TTE})^{0.7}
 $$
    
    This weighting implies that when TTE is high, the profit potential per unit deviation is larger. In our implementation, we also adjust the trade size by effectively scaling it in proportion to $(\\text{TTE})^{0.7}$. Moreover, a robust, modified z-score is computed using the median and the median absolute deviation (MAD) to reduce the influence of outliers.
+   
 5. **Comparison and Optimization:** We compare the two models with the goal of optimizing absolute P/L, Sharpe Ratio, and Drawdown. In addition, we document experiments with linear regression-based approaches (which yielded unsatisfactory results) and discuss the potential benefits of a Kalman Filter-based pairs trading strategy. However, we chose to develop our own modifications rather than directly employing a premade solution.
 
 ---
