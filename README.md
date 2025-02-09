@@ -11,19 +11,25 @@ This project implements and compares two pairs trading strategies based on impli
 **Key Deliverables:**
 
 1. **Base Model:** A standard z-score based trading system using the spread defined as
-   $$
-   \text{Spread} = \text{Bank Nifty IV} - \text{Nifty IV}
-   $$
+   
+$$
+\\text{Spread} = \\text{Bank Nifty IV} - \\text{Nifty IV}
+$$
+   
    and a profit/loss (P/L) calculation given by
-   $$
-   \text{P/L} = \text{Spread} \times (\text{Time To Expiry})^{0.7}
-   $$
-2. **Enhanced Model:** An improved model that modifies the spread definition by incorporating the effect of time-to-expiry (TTE) directly into the spread. In this model, the “weighted spread” is defined as
-   $$
-   W = (\text{Bank Nifty IV} - \text{Nifty IV}) \times (\text{TTE})^{0.7}
-   $$
-   This weighting implies that when TTE is high, the profit potential per unit deviation is larger. In our implementation, we also adjust the trade size by effectively scaling it in proportion to $(\text{TTE})^{0.7}$. Moreover, a robust, modified z-score is computed using the median and the median absolute deviation (MAD) to reduce the influence of outliers.
-3. **Comparison and Optimization:** We compare the two models with the goal of optimizing absolute P/L, Sharpe Ratio, and Drawdown. In addition, we document experiments with linear regression-based approaches (which yielded unsatisfactory results) and discuss the potential benefits of a Kalman Filter-based pairs trading strategy. However, we chose to develop our own modifications rather than directly employing a premade solution.
+   
+$$
+\\text{P/L} = \\text{Spread} \\times (\\text{Time To Expiry})^{0.7}
+$$
+   
+3. **Enhanced Model:** An improved model that modifies the spread definition by incorporating the effect of time-to-expiry (TTE) directly into the spread. In this model, the “weighted spread” is defined as
+   
+$$
+W = (\\text{Bank Nifty IV} - \\text{Nifty IV}) \\times (\\text{TTE})^{0.7}
+$$
+   
+   This weighting implies that when TTE is high, the profit potential per unit deviation is larger. In our implementation, we also adjust the trade size by effectively scaling it in proportion to $(\\text{TTE})^{0.7}$. Moreover, a robust, modified z-score is computed using the median and the median absolute deviation (MAD) to reduce the influence of outliers.
+5. **Comparison and Optimization:** We compare the two models with the goal of optimizing absolute P/L, Sharpe Ratio, and Drawdown. In addition, we document experiments with linear regression-based approaches (which yielded unsatisfactory results) and discuss the potential benefits of a Kalman Filter-based pairs trading strategy. However, we chose to develop our own modifications rather than directly employing a premade solution.
 
 ---
 
@@ -50,40 +56,40 @@ The dataset is provided as `data.parquet` and includes:
 - **Base Model (Z-score Trading System):**\
   The `calculate_spread_and_zscore` function computes:
 
-  - The spread as the simple difference $S = \text{BankNifty IV} - \text{Nifty IV}$.
+  - The spread as the simple difference $S = \\text{BankNifty IV} - \\text{Nifty IV}$ .
   - Rolling mean and standard deviation (over a specified window, e.g. 1875 minutes representing one full trading week).
   - Standard z-score signal for entry/exit decisions.
 
   The `generate_positions` function creates trade signals based on these z-scores. The `calculate_pnl` function then calculates the P/L using the given formula:
 
-  $$
-  \text{P/L} = S \times (\text{TTE})^{0.7}
-  $$
+$$
+\\text{P/L} = S \\times (\\text{TTE})^{0.7}
+$$
 
   Positions are assumed to be fixed (unit notional), making performance metrics directly comparable across trades.
 
 - **Enhanced Model (Weighted Spread & Robust Z-score):**\
-   The enhanced method modifies the spread calculation to account for TTE by defining:
+  The enhanced method modifies the spread calculation to account for TTE by defining:
 
-  $$
-  W = (\text{BankNifty IV} - \text{Nifty IV}) \times (\text{TTE})^{0.7}
-  $$
+$$
+W = (\\text{BankNifty IV} - \\text{Nifty IV}) \\times (\\text{TTE})^{0.7}
+$$
 
   This effectively means that if TTE is higher, the “spread” is magnified. In practical terms, this is analogous to buying more units of the asset when the profit equation is more favorable. In addition, rather than using the conventional mean and standard deviation, a robust z-score is computed using the rolling median and median absolute deviation (MAD) as follows:
 
-  $$
-  \text{Modified Z-score} = 0.6745 \times \frac{W - \text{median}(W)}{\text{MAD}(W)}
-  $$
+$$
+\\text{Modified Z-score} = 0.6745 \\times \\frac{W - \\text{median}(W)}{\\text{MAD}(W)}
+$$
 
-  The rest of the functions (`generate_positions_new`, `calculate_pnl_new`, `extract_trades_new`) follow a similar structure but use the enhanced spread. Note that TTE is also used to adjust the effective quantity (i.e. trading units are scaled by $(\text{TTE})^{0.7}$), which further refines the P/L calculation.
+  The rest of the functions (`generate_positions_new`, `calculate_pnl_new`, `extract_trades_new`) follow a similar structure but use the enhanced spread. Note that TTE is also used to adjust the effective quantity (i.e. trading units are scaled by $(\\text{TTE})^{0.7})$ , which further refines the P/L calculation.
 
-- **Trade Extraction & Metrics:**\
+- **Trade Extraction & Metrics:**\\
   Discrete trade events are extracted (using `extract_trades` or `extract_trades_new`) to record trade entry/exit times, net profit, and invested capital (using the absolute raw_pnl at entry as a proxy for capital deployment). Performance metrics (total P/L, Sharpe Ratio, maximum drawdown, average invested value, etc.) are then computed. For the Sharpe ratio, we assume weekly returns (using an annualization factor based on 375 minutes/day and 5 trading days/week).
 
-- **Parameter Optimization:**\
+- **Parameter Optimization:**\\
   Although not detailed in the code snippets here, we explored different parameter settings. We found that parameters such as an entry threshold of approximately 1.75 and an exit threshold of about 0.75 yielded better profit at a higher risk level.
 
-- **Alternate Methods Explored:**\
+- **Alternate Methods Explored:**\\
   We also experimented with a linear regression-based approach to estimate a dynamic relationship between Bank Nifty and Nifty IVs (including a TTE term). However, this approach did not yield satisfactory results. Additionally, we came across Kalman Filter-Based Pairs Trading strategies, which appeared promising. Nonetheless, we decided against directly implementing these prepackaged models in favor of developing our own modifications.
 
 ---
@@ -93,7 +99,7 @@ The dataset is provided as `data.parquet` and includes:
 - **Trading Hours:** Data is considered only during 09:15 to 15:30.
 - **Holidays:** Days where both Bank Nifty and Nifty IVs remain constant are removed.
 - **Lookback Window:** For rolling statistics and signal generation, a window of 1875 minutes (approx. one trading week) is used. This parameter is adjustable.
-- **P/L Formula:** The base P/L is computed as $( \text{P/L} = \text{Spread} \times (\text{TTE})^{0.7} $ . For the enhanced model, the spread is weighted by $ (\text{TTE})^{0.7} $ .
+- **P/L Formula:** The base P/L is computed as $\\text{P/L} = \\text{Spread} \\times (\\text{TTE})^{0.7}$ . For the enhanced model, the spread is weighted by $(\\text{TTE})^{0.7}$ .
 - **Capital Deployment:** For trade-level performance, the invested capital is proxied by the absolute raw_pnl at trade entry.
 - **Sharpe Ratio:** Calculated on a weekly return basis, with an annualization factor derived from the assumption of 375 minutes/day and 5 trading days/week.
 - **Trade Signal Generation:** The strategy enforces that a new trade is only entered after the previous trade is closed, with immediate reversals allowed if the signal strongly flips.
@@ -121,12 +127,12 @@ The dataset is provided as `data.parquet` and includes:
 - **Average Invested Value:** 5.96 (units)
 - **Total Trades:** 485
 - **Observations:**  
-  In the enhanced model, fewer but significantly larger spikes were observed. By incorporating TTE into the spread and effectively scaling the trade size (buying units proportional to $ (\text{TTE})^{0.7} $, the model achieved markedly higher profits. The robust modified z‑score (using median and MAD) reduced noise and outlier effects, yielding a higher Sharpe ratio and lower relative drawdown compared to the base model.
+  In the enhanced model, fewer but significantly larger spikes were observed. By incorporating TTE into the spread and effectively scaling the trade size (buying units proportional to $(\\text{TTE})^{0.7}$ , the model achieved markedly higher profits. The robust modified z‑score (using median and MAD) reduced noise and outlier effects, yielding a higher Sharpe ratio and lower relative drawdown compared to the base model.
 
 **Other Methods Considered:**
 
 - **Linear Regression-Based Spread:**  
-  We attempted to estimate a dynamic hedge ratio using linear regression (with Bank Nifty IV as a function of Nifty IV and $ (\text{TTE})^{0.7} $. However, this approach did not improve performance relative to our enhanced method.
+  We attempted to estimate a dynamic hedge ratio using linear regression (with Bank Nifty IV as a function of Nifty IV and $(\\text{TTE})^{0.7}$ . However, this approach did not improve performance relative to our enhanced method.
 - **Kalman Filter-Based Strategy:**  
   A Kalman Filter approach for dynamic hedge ratio estimation appeared theoretically promising but was not directly implemented. We opted to develop our own enhancements rather than adopt a prebuilt solution, emphasizing our ability to innovate.
 
@@ -137,35 +143,41 @@ The dataset is provided as `data.parquet` and includes:
 Let:
 
 $$
- S_t = \text{BankNifty IV}_t - \text{Nifty IV}_t\
+S_t = \\text{BankNifty IV}_t - \\text{Nifty IV}_t\\
 $$
 
 $$
-T_t = (\text{TTE}\_t)^{0.7}\
+T_t = (\\text{TTE}\\_t)^{0.7}\\
 $$
 
 **Base Model:**
 
-- **Spread:** $ S_t $
-- **P/L per minute:** $ \text{P/L}\_t = S_t \times T_t $
+- **Spread:** $S_t$
+- **P/L per minute:** $\\text{P/L}_t = S_t \\times T_t$
 
 **Enhanced Model:**
 
 - **Weighted Spread:**
-  $$
-  W_t = S_t \times T_t
-  $$
+  
+$$
+W_t = S_t \\times T_t
+$$
+
 - **Robust Z-Score Computation:**\
-  Instead of using the rolling mean $ (\mu) $ and standard deviation $(\sigma)$ of $(W_t)$, we use the rolling median $(m)$ and MAD:
-  $$
-  \text{Modified Z-score}_t = 0.6745 \times \frac{W_t - m}{\text{MAD}}
-  $$
+  Instead of using the rolling mean $(\\mu)$ and standard deviation $(\\sigma)$ of $(W_t)$, we use the rolling median $(m)$ and MAD:
+
+$$
+\\text{Modified Z-score}_t = 0.6745 \\times \\frac{W_t - m}{\\text{MAD}}
+$$
+
   This scaling constant (0.6745) ensures that, for a normally distributed dataset, the modified z-score is comparable to the conventional z-score.
 - **Position Sizing:**\
   Positions are generated based on the robust z-score. Moreover, since the profit equation is now $(W_t)$ rather than $(S_t)$, the actual number of “units” traded is effectively scaled by $(T_t)$. In other words, a trade with a longer TTE implies a larger exposure because:
-  $$
-  \text{Effective Units} \propto T_t
-  $$
+
+$$
+\\text{Effective Units} \\propto T_t
+$$
+
 - **Cumulative P/L:**\
   The net profit is computed as the cumulative change in the weighted spread, adjusted by the position held.
 
