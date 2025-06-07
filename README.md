@@ -1,6 +1,6 @@
 # Quant Research Project – Pairs Trading Strategy on Nifty and Bank Nifty
 
-**Author:** Arsh Singh
+**Author:** Nayan Rathore
 
 ---
 
